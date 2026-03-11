@@ -60,7 +60,7 @@ const topTags = Array.from(allTags.entries())
       <!-- Popular Tags -->
       {topTags.length > 0 && (
         <div class="mb-8">
-          <h3 class="text-sm font-medium text-gray-500 mb-3">热门标签</h3>
+          <p class="text-sm font-medium text-gray-500 mb-3">热门标签</p>
           <div class="flex flex-wrap justify-center gap-2">
             {topTags.map(([tag, count]) => (
               <TagBadge 

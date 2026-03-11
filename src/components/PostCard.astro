@@ -60,8 +60,8 @@ const highlightText = (text: string, query: string) => {
 <article class="article-card group">
   <!-- Header -->
   <header class="mb-4">
-    <a href={`/blog/posts/${slug}`} class="block">
-      <h2 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-brand transition-colors" set:html={highlightQuery ? highlightText(title, highlightQuery) : title}>
+    <a href={`/blog/posts/${slug}`} class="block" aria-label={`阅读文章: ${title}`}>
+      <h2 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-brand transition-colors" set:html={highlightQuery ? highlightText(title, highlightQuery) : title}></h2>
     </a>
     
     <!-- Meta information -->
