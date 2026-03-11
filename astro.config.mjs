@@ -16,5 +16,28 @@ export default defineConfig({
     shikiConfig: {
       theme: 'github-dark'
     }
-  }
+  },
+  image: {
+    // Enable Sharp image service for WebP conversion
+    service: {
+      entrypoint: 'astro/assets/services/sharp'
+    },
+    // Default quality for all images
+    quality: 80,
+    // Supported formats for automatic conversion
+    formats: ['webp', 'avif']
+  },
+  // Build optimizations
+  build: {
+    // Inline small assets as base64
+    inlineStylesheets: 'auto'
+  },
+  // Prefetch configuration for better performance
+  prefetch: {
+    prefetchAll: false,
+    defaultStrategy: 'viewport'
+  },
+  // Compress HTML output
+  compressHTML: true
 });
+
