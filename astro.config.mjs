@@ -9,11 +9,7 @@ export default defineConfig({
   base: '/blog',
   integrations: [
     tailwind(),
-    mdx({
-      components: {
-        Callout: './src/components/mdx/Callout.astro',
-      }
-    }),
+    mdx(),
     sitemap(),
   ],
   markdown: {
