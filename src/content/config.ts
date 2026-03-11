@@ -27,6 +27,8 @@ const blog = defineCollection({
     draft: z.boolean().default(false),
     /** Open Graph 封面图片路径（可选） */
     ogImage: z.string().optional(),
+    /** 阅读时间（分钟） */
+    readingTime: z.number().optional(),
   }),
 });
 

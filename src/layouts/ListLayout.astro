@@ -1,0 +1,411 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  showHeader?: boolean;
+  showFilters?: boolean;
+  currentFilter?: string;
+  totalItems?: number;
+  page?: number;
+  totalPages?: number;
+}
+
+const { 
+  title, 
+  description = 'Mirage Studio 技术博客文章列表',
+  showHeader = true,
+  showFilters = false,
+  currentFilter = 'all',
+  totalItems = 0,
+  page = 1,
+  totalPages = 1,
+} = Astro.props;
+
+const filters = [
+  { id: 'all', label: '全部', count: totalItems },
+  { id: 'recent', label: '最新', count: 0 },
+  { id: 'popular', label: '热门', count: 0 },
+  { id: 'tutorial', label: '教程', count: 0 },
+  { id: 'project', label: '项目', count: 0 },
+];
+---
+
+<BaseLayout title={title} description={description}>
+  <Nav showHomeLink={true} currentPage={Astro.url.pathname} />
+  
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+    {showHeader && (
+      <header class="mb-12">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div>
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              {title}
+            </h1>
+            {description && (
+              <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
+                {description}
+              </p>
+            )}
+          </div>
+          
+          {totalItems > 0 && (
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              <span class="text-brand dark:text-brand-light font-semibold">{totalItems}</span> 篇文章
+            </div>
+          )}
+        </div>
+
+        {/* Filters */}
+        {showFilters && (
+          <div class="mb-10">
+            <div class="flex flex-wrap gap-2">
+              {filters.map(filter => {
+                const isActive = currentFilter === filter.id;
+                return (
+                  <button
+                    type="button"
+                    class={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r from-brand to-brand-light text-white shadow-md'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                    aria-pressed={isActive}
+                  >
+                    {filter.label}
+                    {filter.count > 0 && (
+                      <span class={`ml-2 px-1.5 py-0.5 rounded text-xs ${
+                        isActive
+                          ? 'bg-white/20'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                      }`}>
+                        {filter.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </header>
+    )}
+
+    {/* Content Grid */}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Main Content */}
+      <div class="lg:col-span-2">
+        <div class="grid gap-8">
+          <slot />
+        </div>
+
+        {/* Empty State */}
+        {totalItems === 0 && (
+          <div class="text-center py-16">
+            <div class="w-24 h-24 mx-auto mb-6 text-gray-300 dark:text-gray-700">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">暂无文章</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+              目前还没有发布任何文章。请稍后再来查看，或订阅我们的更新。
+            </p>
+            <a
+              href="/blog/rss.xml"
+              class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-brand to-brand-light rounded-lg hover:opacity-90 transition-opacity"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6.18 15.64a2.18 2.18 0 1 1-2.18-2.18 2.18 2.18 0 0 1 2.18 2.18z" />
+                <path d="M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.22A13.34 13.34 0 0 0 4 6.66z" />
+                <path d="M4 10.1a9.9 9.9 0 0 1 9.9 9.9h-2.22A7.68 7.68 0 0 0 4 12.32z" />
+              </svg>
+              订阅 RSS
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* Sidebar */}
+      <div class="lg:col-span-1">
+        <div class="space-y-8">
+          {/* Popular Tags */}
+          <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              热门标签
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              {['astro', 'react', 'tailwind', 'typescript', 'github', 'ai'].map(tag => (
+                <a
+                  href={`/blog/tags/${tag}`}
+                  class="inline-flex items-center px-3 py-1.5 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <span class="text-brand dark:text-brand-light mr-1">#</span>
+                  {tag}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Newsletter */}
+          <div class="bg-gradient-to-br from-brand/10 to-brand-light/10 dark:from-brand/20 dark:to-brand-light/20 rounded-xl p-6 border border-brand/20">
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-3">订阅更新</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              获取最新的技术文章和项目更新。
+            </p>
+            <form class="space-y-3">
+              <input
+                type="email"
+                placeholder="your@email.com"
+                class="w-full px-4 py-2.5 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition"
+                required
+              />
+              <button
+                type="submit"
+                class="w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-brand to-brand-light rounded-lg hover:opacity-90 transition-opacity"
+              >
+                订阅
+              </button>
+            </form>
+          </div>
+
+          {/* Recent Posts */}
+          <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              最新文章
+            </h3>
+            <div class="space-y-4">
+              {[1, 2, 3].map(i => (
+                <a href="#" class="group block">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-brand dark:group-hover:text-brand-light transition-colors mb-1">
+                    文章标题示例 {i}
+                  </h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {new Date().toLocaleDateString('zh-CN')}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Pagination */}
+    {totalPages > 1 && (
+      <div class="mt-16 pt-10 border-t border-gray-200 dark:border-gray-800">
+        <nav class="flex items-center justify-between" aria-label="分页">
+          <div>
+            {page > 1 && (
+              <a
+                href={`?page=${page - 1}`}
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                上一页
+              </a>
+            )}
+          </div>
+          
+          <div class="hidden sm:flex items-center gap-2">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNum = i + 1;
+              const isCurrent = pageNum === page;
+              return (
+                <a
+                  href={`?page=${pageNum}`}
+                  class={`w-10 h-10 flex items-center justify-center text-sm font-medium rounded-lg transition-colors ${
+                    isCurrent
+                      ? 'bg-gradient-to-r from-brand to-brand-light text-white'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                  aria-current={isCurrent ? 'page' : undefined}
+                >
+                  {pageNum}
+                </a>
+              );
+            })}
+            {totalPages > 5 && (
+              <>
+                <span class="text-gray-400 dark:text-gray-600">...</span>
+                <a
+                  href={`?page=${totalPages}`}
+                  class="w-10 h-10 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  {totalPages}
+                </a>
+              </>
+            )}
+          </div>
+          
+          <div class="text-sm text-gray-500 dark:text-gray-400 sm:hidden">
+            第 {page} 页，共 {totalPages} 页
+          </div>
+          
+          <div>
+            {page < totalPages && (
+              <a
+                href={`?page=${page + 1}`}
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                下一页
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            )}
+          </div>
+        </nav>
+      </div>
+    )}
+  </main>
+
+  <Footer showBackToTop={true} showRssLink={true} />
+</BaseLayout>
+
+<!-- Article Card Styles -->
+<style>
+  .article-card {
+    @apply border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors bg-white dark:bg-gray-900/50;
+  }
+  
+  .article-card:hover {
+    @apply shadow-lg dark:shadow-gray-900/30 transform -translate-y-1;
+  }
+  
+  .article-card h2 {
+    @apply text-xl font-bold text-gray-900 dark:text-white mb-3 hover:text-brand dark:hover:text-brand-light transition-colors;
+  }
+  
+  .article-card p {
+    @apply text-gray-600 dark:text-gray-400 line-clamp-3 mb-4 text-sm leading-relaxed;
+  }
+  
+  .article-meta {
+    @apply flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400;
+  }
+  
+  .article-tags {
+    @apply flex flex-wrap gap-2 mt-4;
+  }
+  
+  .article-tag {
+    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors;
+  }
+  
+  .article-tag::before {
+    content: '#';
+    @apply text-brand dark:text-brand-light mr-0.5;
+  }
+  
+  /* Animation for cards */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .article-card {
+    animation: fadeInUp 0.3s ease-out;
+  }
+  
+  /* Stagger animation for multiple cards */
+  .article-card:nth-child(1) { animation-delay: 0.1s; }
+  .article-card:nth-child(2) { animation-delay: 0.2s; }
+  .article-card:nth-child(3) { animation-delay: 0.3s; }
+  .article-card:nth-child(4) { animation-delay: 0.4s; }
+  .article-card:nth-child(5) { animation-delay: 0.5s; }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('button[aria-pressed]');
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const filterId = button.textContent.trim().toLowerCase();
+        // In a real implementation, this would filter the articles
+        console.log(`Filtering by: ${filterId}`);
+        
+        // Update active state
+        filterButtons.forEach(btn => {
+          const isActive = btn === button;
+          btn.setAttribute('aria-pressed', isActive.toString());
+          btn.classList.toggle('bg-gradient-to-r', isActive);
+          btn.classList.toggle('from-brand', isActive);
+          btn.classList.toggle('to-brand-light', isActive);
+          btn.classList.toggle('text-white', isActive);
+          btn.classList.toggle('shadow-md', isActive);
+          btn.classList.toggle('bg-gray-100', !isActive);
+          btn.classList.toggle('dark:bg-gray-800', !isActive);
+          btn.classList.toggle('text-gray-700', !isActive);
+          btn.classList.toggle('dark:text-gray-300', !isActive);
+          btn.classList.toggle('hover:bg-gray-200', !isActive);
+          btn.classList.toggle('dark:hover:bg-gray-700', !isActive);
+        });
+      });
+    });
+    
+    // Newsletter form submission
+    const newsletterForm = document.querySelector('form');
+    if (newsletterForm) {
+      newsletterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const emailInput = newsletterForm.querySelector('input[type="email"]') as HTMLInputElement;
+        const email = emailInput?.value;
+        
+        if (!email) return;
+        
+        // In a real implementation, this would submit to a newsletter service
+        console.log(`Subscribing email: ${email}`);
+        
+        // Show success message
+        const button = newsletterForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+        if (!button) return;
+        
+        const originalText = button.textContent || '';
+        button.textContent = '已订阅！';
+        button.classList.add('bg-green-500', 'from-green-500', 'to-green-600');
+        button.classList.remove('bg-gradient-to-r', 'from-brand', 'to-brand-light');
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('bg-green-500', 'from-green-500', 'to-green-600');
+          button.classList.add('bg-gradient-to-r', 'from-brand', 'to-brand-light');
+          newsletterForm.reset();
+        }, 3000);
+      });
+    }
+    
+    // Lazy load images in article cards
+    const articleCards = document.querySelectorAll('.article-card');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const card = entry.target;
+          // In a real implementation, this would load lazy images
+          card.classList.add('loaded');
+          observer.unobserve(card);
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    articleCards.forEach(card => observer.observe(card));
+  });
+</script>

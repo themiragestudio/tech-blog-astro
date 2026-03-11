@@ -2,36 +2,175 @@
 interface Props {
   title: string;
   description?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  ogType?: string;
+  twitterCard?: string;
+  twitterSite?: string;
+  author?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  tags?: string[];
 }
 
-const { title, description = 'Mirage Studio 技术博客 — AI 团队的工程实践记录' } = Astro.props;
+const { 
+  title, 
+  description = 'Mirage Studio 技术博客 — AI 团队的工程实践记录',
+  canonicalUrl,
+  ogImage = '/blog/og-default.png',
+  ogType = 'website',
+  twitterCard = 'summary_large_image',
+  twitterSite = '@mirage_studio',
+  author = 'Mirage Studio',
+  publishedTime,
+  modifiedTime,
+  tags = []
+} = Astro.props;
+
+const siteUrl = 'https://themiragestudio.github.io';
+const fullTitle = `${title} | Mirage Studio 技术博客`;
+const fullDescription = description.length > 160 ? description.substring(0, 157) + '...' : description;
+const fullCanonicalUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
+const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/blog/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{fullTitle}</title>
+    <meta name="title" content={fullTitle} />
+    <meta name="description" content={fullDescription} />
+    <meta name="author" content={author} />
     <meta name="generator" content={Astro.generator} />
-    <meta name="description" content={description} />
-    <title>{title}</title>
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href={fullCanonicalUrl} />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={fullCanonicalUrl} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={fullDescription} />
+    <meta property="og:image" content={fullOgImage} />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:site_name" content="Mirage Studio 技术博客" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content={twitterCard} />
+    <meta property="twitter:url" content={fullCanonicalUrl} />
+    <meta property="twitter:title" content={fullTitle} />
+    <meta property="twitter:description" content={fullDescription} />
+    <meta property="twitter:image" content={fullOgImage} />
+    <meta property="twitter:site" content={twitterSite} />
+    <meta property="twitter:creator" content={twitterSite} />
+    
+    <!-- Article Specific Meta -->
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    {author && <meta property="article:author" content={author} />}
+    {tags.length > 0 && tags.map(tag => (
+      <meta property="article:tag" content={tag} />
+    ))}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/blog/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/blog/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/blog/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/blog/favicon-16x16.png" />
+    <link rel="manifest" href="/blog/site.webmanifest" />
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    
+    <!-- Global Styles -->
+    <style>
+      :root {
+        --color-brand: #7C3AED;
+        --color-brand-light: #8B5CF6;
+        --color-brand-dark: #6D28D9;
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-background: #0F172A;
+          --color-foreground: #F8FAFC;
+        }
+      }
+      
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      html {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+      
+      code, pre {
+        font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+      }
+      
+      .prose pre {
+        background-color: #1E293B !important;
+        border: 1px solid #334155;
+      }
+      
+      .prose code {
+        background-color: #F1F5F9;
+        padding: 0.2em 0.4em;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        .prose code {
+          background-color: #334155;
+          color: #E2E8F0;
+        }
+      }
+    </style>
   </head>
-  <body class="bg-white text-gray-900 font-sans">
-    <header class="border-b border-gray-200 py-4">
-      <nav class="max-w-3xl mx-auto px-4 flex items-center justify-between">
-        <a href="/blog" class="font-semibold text-lg text-gray-900 hover:text-blue-600">
-          Mirage Studio Blog
-        </a>
-        <div class="flex gap-6 text-sm text-gray-600">
-          <a href="/blog" class="hover:text-gray-900">首页</a>
-          <a href="/blog/posts" class="hover:text-gray-900">文章</a>
-        </div>
-      </nav>
-    </header>
+  <body class="bg-white text-gray-900 font-sans min-h-screen flex flex-col antialiased dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
     <slot />
-    <footer class="border-t border-gray-200 mt-20 py-8 text-center text-sm text-gray-500">
-      <p>© 2026 Mirage Studio. Built with Astro.</p>
-    </footer>
+    
+    <!-- Scripts -->
+    <script>
+      // Detect prefers-color-scheme
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      }
+      
+      // Smooth scroll for anchor links
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+          anchor.addEventListener('click', function (this: HTMLAnchorElement, e: Event) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId!);
+            if (targetElement) {
+              targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>

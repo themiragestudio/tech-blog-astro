@@ -1,0 +1,91 @@
+{
+  "performance": {
+    "first-contentful-paint": {
+      "budget": 1800,
+      "unit": "ms",
+      "target": "fast"
+    },
+    "largest-contentful-paint": {
+      "budget": 2500,
+      "unit": "ms",
+      "target": "fast"
+    },
+    "cumulative-layout-shift": {
+      "budget": 0.1,
+      "unit": "score",
+      "target": "good"
+    },
+    "total-blocking-time": {
+      "budget": 200,
+      "unit": "ms",
+      "target": "good"
+    },
+    "speed-index": {
+      "budget": 3400,
+      "unit": "ms",
+      "target": "fast"
+    }
+  },
+  "accessibility": {
+    "score": {
+      "budget": 95,
+      "unit": "percentage",
+      "target": "excellent"
+    }
+  },
+  "best-practices": {
+    "score": {
+      "budget": 90,
+      "unit": "percentage",
+      "target": "good"
+    }
+  },
+  "seo": {
+    "score": {
+      "budget": 90,
+      "unit": "percentage",
+      "target": "good"
+    }
+  },
+  "pwa": {
+    "score": {
+      "budget": 70,
+      "unit": "percentage",
+      "target": "basic"
+    }
+  },
+  "size-budgets": {
+    "total-js-size": {
+      "budget": 170,
+      "unit": "kb",
+      "target": "optimal"
+    },
+    "total-css-size": {
+      "budget": 50,
+      "unit": "kb",
+      "target": "optimal"
+    },
+    "total-image-size": {
+      "budget": 500,
+      "unit": "kb",
+      "target": "optimal"
+    }
+  },
+  "targets": {
+    "overall-performance-score": {
+      "budget": 90,
+      "unit": "percentage",
+      "target": "excellent"
+    },
+    "mobile-performance-score": {
+      "budget": 85,
+      "unit": "percentage",
+      "target": "good"
+    },
+    "desktop-performance-score": {
+      "budget": 95,
+      "unit": "percentage",
+      "target": "excellent"
+    }
+  }
+}

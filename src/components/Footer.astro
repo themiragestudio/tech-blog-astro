@@ -1,0 +1,222 @@
+---
+interface Props {
+  showBackToTop?: boolean;
+  showRssLink?: boolean;
+}
+
+const { showBackToTop = true, showRssLink = true } = Astro.props;
+
+const footerLinks = {
+  content: [
+    { name: '文章列表', href: '/blog/posts' },
+    { name: '标签分类', href: '/blog/tags' },
+    { name: '关于我们', href: '/blog/about' },
+    { name: '投稿指南', href: '/blog/contributing' },
+  ],
+  legal: [
+    { name: '隐私政策', href: '/blog/privacy' },
+    { name: '使用条款', href: '/blog/terms' },
+    { name: 'Cookie 政策', href: '/blog/cookies' },
+  ],
+  external: [
+    { name: '官网', href: 'https://mirage.studio', icon: 'external' },
+    { name: 'GitHub', href: 'https://github.com/mirage-studio', icon: 'github' },
+    { name: 'Twitter', href: 'https://twitter.com/mirage_studio', icon: 'twitter' },
+    { name: '联系', href: 'mailto:hello@mirage.studio', icon: 'mail' },
+  ],
+};
+---
+
+<footer class="bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-800 mt-20">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Main Footer Content -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+      <!-- Brand & Description -->
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand to-brand-light flex items-center justify-center">
+            <span class="text-white font-bold text-sm">MS</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white">Mirage Studio 技术博客</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">AI 团队的工程实践记录</p>
+          </div>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+          记录 Mirage Studio AI 团队的技术探索、项目历程与工程实践。分享从 HomePage 项目到后续工具开发的完整技术历程。
+        </p>
+        <div class="flex items-center gap-4">
+          {showRssLink && (
+            <a
+              href="/blog/rss.xml"
+              class="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+              aria-label="订阅 RSS"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6.18 15.64a2.18 2.18 0 1 1-2.18-2.18 2.18 2.18 0 0 1 2.18 2.18z" />
+                <path d="M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.22A13.34 13.34 0 0 0 4 6.66z" />
+                <path d="M4 10.1a9.9 9.9 0 0 1 9.9 9.9h-2.22A7.68 7.68 0 0 0 4 12.32z" />
+              </svg>
+              RSS 订阅
+            </a>
+          )}
+          <a
+            href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+            </svg>
+            CC BY-NC-SA 4.0
+          </a>
+        </div>
+      </div>
+
+      <!-- Content Links -->
+      <div>
+        <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm uppercase tracking-wider">内容</h4>
+        <ul class="space-y-2">
+          {footerLinks.content.map(link => (
+            <li>
+              <a
+                href={link.href}
+                class="text-sm text-gray-600 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+              >
+                {link.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Legal Links -->
+      <div>
+        <h4 class="font-semibold text-gray-900 dark:text-white mb-4 text-sm uppercase tracking-wider">法律</h4>
+        <ul class="space-y-2">
+          {footerLinks.legal.map(link => (
+            <li>
+              <a
+                href={link.href}
+                class="text-sm text-gray-600 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+              >
+                {link.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="border-t border-gray-200 dark:border-gray-800 pt-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <!-- Copyright -->
+        <div class="text-center md:text-left">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            © 2026 Mirage Studio. 保留所有权利。
+          </p>
+          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            由 Astro 驱动，Tailwind CSS 构建，部署于 GitHub Pages。
+          </p>
+        </div>
+
+        <!-- Social Links -->
+        <div class="flex items-center gap-4">
+          {footerLinks.external.map(link => (
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-gray-400 dark:text-gray-500 hover:text-brand dark:hover:text-brand-light transition-colors"
+              aria-label={link.name}
+            >
+              {link.icon === 'github' ? (
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+                </svg>
+              ) : link.icon === 'twitter' ? (
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              ) : link.icon === 'mail' ? (
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              ) : (
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              )}
+            </a>
+          ))}
+        </div>
+
+        <!-- Back to top button -->
+        {showBackToTop && (
+          <button
+            onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+            class="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+            aria-label="回到顶部"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+            回到顶部
+          </button>
+        )}
+      </div>
+
+      <!-- Stats -->
+      <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+        <div class="flex flex-wrap justify-center gap-6 text-xs text-gray-400 dark:text-gray-500">
+          <span>最后构建: {new Date().toLocaleDateString('zh-CN')}</span>
+          <span>版本: v0.1.0</span>
+          <span>文章数: 2</span>
+          <span>标签数: 6</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Back to top button visibility
+  document.addEventListener('DOMContentLoaded', () => {
+    const backToTopButton = document.querySelector('button[aria-label="回到顶部"]');
+    if (!backToTopButton) return;
+    
+    const toggleBackToTop = () => {
+      if (window.scrollY > 300) {
+        backToTopButton.classList.remove('opacity-0', 'invisible');
+        backToTopButton.classList.add('opacity-100', 'visible');
+      } else {
+        backToTopButton.classList.remove('opacity-100', 'visible');
+        backToTopButton.classList.add('opacity-0', 'invisible');
+      }
+    };
+    
+    // Initial check
+    toggleBackToTop();
+    
+    // Listen for scroll
+    window.addEventListener('scroll', toggleBackToTop);
+  });
+</script>
+
+<style>
+  button[aria-label="回到顶部"] {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  button[aria-label="回到顶部"].opacity-0 {
+    opacity: 0;
+    visibility: hidden;
+  }
+  
+  button[aria-label="回到顶部"].opacity-100 {
+    opacity: 1;
+    visibility: visible;
+  }
+</style>

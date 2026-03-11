@@ -1,0 +1,225 @@
+---
+interface Props {
+  showHomeLink?: boolean;
+  currentPage?: string;
+}
+
+const { showHomeLink = true, currentPage = '' } = Astro.props;
+
+const navItems = [
+  { name: '首页', href: '/blog', show: showHomeLink },
+  { name: '文章', href: '/blog/posts', show: true },
+  { name: '标签', href: '/blog/tags', show: true },
+  { name: '关于', href: '/blog/about', show: true },
+];
+
+const externalLinks = [
+  { name: '官网', href: 'https://mirage.studio', icon: 'external' },
+  { name: 'GitHub', href: 'https://github.com/mirage-studio', icon: 'github' },
+];
+---
+
+<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-100 dark:bg-gray-900/80 dark:border-gray-800 transition-colors">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <a href="/blog" class="flex items-center gap-2 group">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-brand-light flex items-center justify-center">
+            <span class="text-white font-bold text-sm">MS</span>
+          </div>
+          <span class="font-bold text-lg text-gray-900 dark:text-white group-hover:text-brand transition-colors">
+            Mirage Studio
+          </span>
+          <span class="text-sm text-gray-500 dark:text-gray-400 ml-1">Blog</span>
+        </a>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-8">
+        <!-- Internal Links -->
+        <div class="flex items-center gap-6">
+          {navItems.filter(item => item.show).map(item => {
+            const isActive = currentPage === item.href;
+            return (
+              <a
+                href={item.href}
+                class={`text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'text-brand dark:text-brand-light'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-brand dark:hover:text-brand-light'
+                }`}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {item.name}
+              </a>
+            );
+          })}
+        </div>
+
+        <!-- External Links -->
+        <div class="flex items-center gap-4 border-l border-gray-200 dark:border-gray-700 pl-6">
+          {externalLinks.map(link => (
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-gray-500 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+              aria-label={link.name}
+            >
+              {link.icon === 'github' ? (
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+                </svg>
+              ) : (
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              )}
+            </a>
+          ))}
+          
+          <!-- Theme Toggle (Placeholder for future implementation) -->
+          <button
+            class="text-gray-500 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+            aria-label="切换主题"
+            onclick="document.documentElement.classList.toggle('dark')"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button
+        class="md:hidden text-gray-600 dark:text-gray-300 hover:text-brand dark:hover:text-brand-light transition-colors"
+        id="mobile-menu-button"
+        aria-label="打开菜单"
+        aria-expanded="false"
+      >
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div
+    class="md:hidden hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shadow-lg"
+    id="mobile-menu"
+    role="menu"
+    aria-labelledby="mobile-menu-button"
+  >
+    <div class="px-4 py-3 space-y-1">
+      {navItems.filter(item => item.show).map(item => {
+        const isActive = currentPage === item.href;
+        return (
+          <a
+            href={item.href}
+            class={`block px-3 py-2 rounded-lg text-base font-medium transition-colors ${
+              isActive
+                ? 'bg-brand/10 text-brand dark:text-brand-light'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+            }`}
+            role="menuitem"
+            aria-current={isActive ? 'page' : undefined}
+          >
+            {item.name}
+          </a>
+        );
+      })}
+      
+      <div class="border-t border-gray-100 dark:border-gray-800 pt-3 mt-3">
+        <div class="flex items-center justify-center gap-6 px-3">
+          {externalLinks.map(link => (
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-gray-500 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+              aria-label={link.name}
+            >
+              {link.icon === 'github' ? (
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+                </svg>
+              ) : (
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              )}
+            </a>
+          ))}
+          
+          <button
+            class="text-gray-500 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors"
+            aria-label="切换主题"
+            onclick="document.documentElement.classList.toggle('dark')"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // Mobile menu toggle with improved accessibility
+  document.addEventListener('DOMContentLoaded', () => {
+    const menuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (!menuButton || !mobileMenu) return;
+    
+    const toggleMenu = (expanded: boolean) => {
+      const isExpanded = expanded !== undefined ? expanded : mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden', !isExpanded);
+      menuButton.setAttribute('aria-expanded', isExpanded.toString());
+      menuButton.setAttribute('aria-label', isExpanded ? '关闭菜单' : '打开菜单');
+      
+      // Trap focus in mobile menu when open
+      if (isExpanded) {
+        const firstFocusable = mobileMenu.querySelector('a, button') as HTMLElement | null;
+        if (firstFocusable) {
+          firstFocusable.focus();
+        }
+        document.addEventListener('keydown', handleEscape);
+      } else {
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        toggleMenu(false);
+        menuButton.focus();
+      }
+    };
+    
+    menuButton.addEventListener('click', () => {
+      toggleMenu(mobileMenu.classList.contains('hidden'));
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.classList.contains('hidden') && 
+          !menuButton.contains(e.target as Node) && 
+          !mobileMenu.contains(e.target as Node)) {
+        toggleMenu(false);
+      }
+    });
+    
+    // Close menu on resize to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 768 && !mobileMenu.classList.contains('hidden')) {
+        toggleMenu(false);
+      }
+    });
+  });
+</script>

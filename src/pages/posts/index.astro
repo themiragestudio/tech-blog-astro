@@ -1,34 +1,107 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import TagBadge from '../../components/TagBadge.astro';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+// Get all blog posts
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Extract all tags with counts
+const allTags = new Map<string, number>();
+allPosts.forEach(post => {
+  if (post.data.tags) {
+    post.data.tags.forEach(tag => {
+      allTags.set(tag, (allTags.get(tag) || 0) + 1);
+    });
+  }
+});
+
+// Sort tags by count
+const sortedTags = Array.from(allTags.entries())
+  .sort((a, b) => b[1] - a[1]);
 ---
 
-<BaseLayout title="文章列表 — Mirage Studio Tech Blog">
-  <main class="max-w-3xl mx-auto px-4 py-12">
-    <h1 class="text-4xl font-bold text-gray-900 mb-8">所有文章</h1>
-    <ul class="space-y-8">
-      {posts.map(post => (
-        <li class="border-b border-gray-100 pb-8">
-          <a href={`/blog/posts/${post.slug}/`} class="group">
-            <h2 class="text-2xl font-semibold text-gray-900 group-hover:text-blue-600 mb-2">
-              {post.data.title}
-            </h2>
-            <p class="text-gray-500 text-sm mb-2">
-              {post.data.pubDate.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
-              {post.data.author && ` · ${post.data.author}`}
-            </p>
-            <p class="text-gray-600">{post.data.description}</p>
-            <div class="flex gap-2 mt-3">
-              {post.data.tags.map(tag => (
-                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">#{tag}</span>
-              ))}
-            </div>
-          </a>
-        </li>
-      ))}
-    </ul>
-  </main>
-</BaseLayout>
+<ListLayout 
+  title="所有文章" 
+  description={`共 ${posts.length} 篇文章，涵盖 ${allTags.size} 个技术主题`}
+  showHeader={true}
+>
+  <!-- Filters and Stats -->
+  <div class="mb-12">
+    <!-- Stats -->
+    <div class="flex flex-wrap gap-6 mb-6">
+      <div class="bg-gray-50 px-4 py-3 rounded-lg">
+        <div class="text-2xl font-bold text-brand">{posts.length}</div>
+        <div class="text-sm text-gray-600">篇文章</div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 rounded-lg">
+        <div class="text-2xl font-bold text-brand">{allTags.size}</div>
+        <div class="text-sm text-gray-600">个标签</div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 rounded-lg">
+        <div class="text-2xl font-bold text-brand">
+          {new Date(posts[0]?.data.pubDate).getFullYear()}
+        </div>
+        <div class="text-sm text-gray-600">最新年份</div>
+      </div>
+    </div>
+    
+    <!-- All Tags -->
+    {sortedTags.length > 0 && (
+      <div>
+        <h3 class="text-sm font-medium text-gray-700 mb-3">所有标签</h3>
+        <div class="flex flex-wrap gap-2">
+          {sortedTags.map(([tag, count]) => (
+            <TagBadge 
+              tag={tag} 
+              count={count}
+              href={`/blog/tags/${tag}`}
+              size="sm"
+              variant="outline"
+            />
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+
+  <!-- Posts Grid -->
+  <div class="grid gap-8">
+    {posts.map(post => (
+      <PostCard
+        title={post.data.title}
+        description={post.data.description}
+        date={post.data.pubDate.toISOString()}
+        author={post.data.author}
+        tags={post.data.tags}
+        slug={post.slug}
+        readingTime={post.data.readingTime}
+      />
+    ))}
+  </div>
+
+  <!-- Empty State -->
+  {posts.length === 0 && (
+    <div class="text-center py-12">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p class="text-gray-500">暂无文章</p>
+      <p class="text-sm text-gray-400 mt-2">稍后再来看看吧</p>
+    </div>
+  )}
+
+  <!-- Pagination Note -->
+  {posts.length > 10 && (
+    <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+      <p class="text-sm text-gray-600">
+        显示全部 {posts.length} 篇文章
+      </p>
+      <p class="text-xs text-gray-500 mt-1">
+        未来将添加分页功能，提升浏览体验
+      </p>
+    </div>
+  )}
+</ListLayout>
