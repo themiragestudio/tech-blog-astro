@@ -1,0 +1,136 @@
+---
+interface Props {
+  placeholder?: string;
+  className?: string;
+}
+
+const { placeholder = '搜索文章...', className = '' } = Astro.props;
+---
+
+<div class={`relative ${className}`}>
+  <div class="relative">
+    <svg 
+      class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" 
+      fill="none" 
+      stroke="currentColor" 
+      viewBox="0 0 24 24"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+    <input
+      type="search"
+      id="search-input"
+      placeholder={placeholder}
+      class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-colors"
+      aria-label="搜索文章"
+    />
+  </div>
+  
+  <!-- Search results container (hidden by default) -->
+  <div 
+    id="search-results" 
+    class="hidden absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto"
+  ></div>
+</div>
+
+<script>
+  // Search functionality
+  document.addEventListener('DOMContentLoaded', async () => {
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    
+    if (!searchInput || !searchResults) return;
+    
+    // Load search index
+    let searchIndex = null;
+    try {
+      const response = await fetch('/blog/search-index.json');
+      if (response.ok) {
+        searchIndex = await response.json();
+      }
+    } catch (error) {
+      console.warn('Search index not available:', error);
+    }
+    
+    // Simple client-side search if index is available
+    if (searchIndex) {
+      const performSearch = (query) => {
+        if (!query.trim()) {
+          searchResults.classList.add('hidden');
+          searchResults.innerHTML = '';
+          return;
+        }
+        
+        const normalizedQuery = query.toLowerCase().trim();
+        const results = searchIndex.filter(post => 
+          post.title.toLowerCase().includes(normalizedQuery) ||
+          post.description.toLowerCase().includes(normalizedQuery) ||
+          post.tags.some(tag => tag.toLowerCase().includes(normalizedQuery))
+        );
+        
+        displayResults(results);
+      };
+      
+      const displayResults = (results) => {
+        searchResults.innerHTML = '';
+        
+        if (results.length === 0) {
+          const noResults = document.createElement('div');
+          noResults.className = 'p-4 text-center text-gray-500 dark:text-gray-400';
+          noResults.textContent = '没有找到相关文章';
+          searchResults.appendChild(noResults);
+        } else {
+          results.forEach(post => {
+            const resultItem = document.createElement('a');
+            resultItem.href = `/blog/posts/${post.slug}`;
+            resultItem.className = 'block p-4 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors';
+            resultItem.innerHTML = `
+              <div class="font-medium text-gray-900 dark:text-gray-100 mb-1">${post.title}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">${post.description}</div>
+              <div class="flex flex-wrap gap-1">
+                ${post.tags.map(tag => `<span class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">${tag}</span>`).join('')}
+              </div>
+            `;
+            searchResults.appendChild(resultItem);
+          });
+        }
+        
+        searchResults.classList.remove('hidden');
+      };
+      
+      // Event listeners
+      searchInput.addEventListener('input', (e) => {
+        performSearch(e.target.value);
+      });
+      
+      searchInput.addEventListener('focus', () => {
+        if (searchInput.value.trim()) {
+          performSearch(searchInput.value);
+        }
+      });
+      
+      // Close results when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+          searchResults.classList.add('hidden');
+        }
+      });
+      
+      // Handle keyboard navigation
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          searchResults.classList.add('hidden');
+          searchInput.blur();
+        }
+      });
+    } else {
+      // Fallback: redirect to search page or show message
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && searchInput.value.trim()) {
+          e.preventDefault();
+          window.location.href = `/blog/search?q=${encodeURIComponent(searchInput.value.trim())}`;
+        }
+      });
+    }
+  });
+</script>

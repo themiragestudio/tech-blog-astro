@@ -4,9 +4,33 @@ import PostCard from '../../components/PostCard.astro';
 import TagBadge from '../../components/TagBadge.astro';
 import { getCollection } from 'astro:content';
 
+// Pagination configuration
+const POSTS_PER_PAGE = 5;
+
+// Get query parameters
+const url = new URL(Astro.request.url);
+const page = parseInt(url.searchParams.get('page') || '1');
+const tagFilter = url.searchParams.get('tag') || '';
+
 // Get all blog posts
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
-const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const sortedPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Apply tag filter if specified
+let filteredPosts = sortedPosts;
+if (tagFilter) {
+  filteredPosts = sortedPosts.filter(post => 
+    post.data.tags && post.data.tags.includes(tagFilter)
+  );
+}
+
+// Calculate pagination
+const totalPosts = filteredPosts.length;
+const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+const currentPage = Math.min(Math.max(page, 1), totalPages);
+const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+const endIndex = startIndex + POSTS_PER_PAGE;
+const posts = filteredPosts.slice(startIndex, endIndex);
 
 // Extract all tags with counts
 const allTags = new Map<string, number>();
@@ -25,15 +49,18 @@ const sortedTags = Array.from(allTags.entries())
 
 <ListLayout 
   title="所有文章" 
-  description={`共 ${posts.length} 篇文章，涵盖 ${allTags.size} 个技术主题`}
+  description={`共 ${totalPosts} 篇文章，涵盖 ${allTags.size} 个技术主题`}
   showHeader={true}
+  totalItems={totalPosts}
+  page={currentPage}
+  totalPages={totalPages}
 >
   <!-- Filters and Stats -->
   <div class="mb-12">
     <!-- Stats -->
     <div class="flex flex-wrap gap-6 mb-6">
       <div class="bg-gray-50 px-4 py-3 rounded-lg">
-        <div class="text-2xl font-bold text-brand">{posts.length}</div>
+        <div class="text-2xl font-bold text-brand">{totalPosts}</div>
         <div class="text-sm text-gray-600">篇文章</div>
       </div>
       <div class="bg-gray-50 px-4 py-3 rounded-lg">
@@ -42,10 +69,16 @@ const sortedTags = Array.from(allTags.entries())
       </div>
       <div class="bg-gray-50 px-4 py-3 rounded-lg">
         <div class="text-2xl font-bold text-brand">
-          {new Date(posts[0]?.data.pubDate).getFullYear()}
+          {new Date(allPosts[0]?.data.pubDate).getFullYear()}
         </div>
         <div class="text-sm text-gray-600">最新年份</div>
       </div>
+      {totalPages > 1 && (
+        <div class="bg-gray-50 px-4 py-3 rounded-lg">
+          <div class="text-2xl font-bold text-brand">{currentPage}/{totalPages}</div>
+          <div class="text-sm text-gray-600">当前页</div>
+        </div>
+      )}
     </div>
     
     <!-- All Tags -->
@@ -93,14 +126,14 @@ const sortedTags = Array.from(allTags.entries())
     </div>
   )}
 
-  <!-- Pagination Note -->
-  {posts.length > 10 && (
-    <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+  <!-- Pagination Info -->
+  {totalPages > 1 && (
+    <div class="mt-8 pt-6 border-t border-gray-200 text-center">
       <p class="text-sm text-gray-600">
-        显示全部 {posts.length} 篇文章
+        显示第 {startIndex + 1}-{Math.min(endIndex, totalPosts)} 篇文章，共 {totalPosts} 篇
       </p>
       <p class="text-xs text-gray-500 mt-1">
-        未来将添加分页功能，提升浏览体验
+        每页显示 {POSTS_PER_PAGE} 篇文章
       </p>
     </div>
   )}

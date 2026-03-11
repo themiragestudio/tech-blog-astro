@@ -7,6 +7,7 @@ interface Props {
   tags?: string[];
   slug: string;
   readingTime?: string | number;
+  highlightQuery?: string;
 }
 
 const { 
@@ -16,7 +17,8 @@ const {
   author = 'Mirage Studio 团队',
   tags = [],
   slug,
-  readingTime = '5分钟'
+  readingTime = '5分钟',
+  highlightQuery = ''
 } = Astro.props;
 
 // Format reading time
@@ -36,15 +38,30 @@ const formatDate = (dateStr: string) => {
     day: 'numeric'
   });
 };
+
+// Highlight text function
+const highlightText = (text: string, query: string) => {
+  if (!query || !text) return text;
+  
+  const normalizedQuery = query.toLowerCase();
+  const normalizedText = text.toLowerCase();
+  const index = normalizedText.indexOf(normalizedQuery);
+  
+  if (index === -1) return text;
+  
+  const before = text.substring(0, index);
+  const match = text.substring(index, index + query.length);
+  const after = text.substring(index + query.length);
+  
+  return `${before}<mark class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">${match}</mark>${after}`;
+};
 ---
 
 <article class="article-card group">
   <!-- Header -->
   <header class="mb-4">
     <a href={`/blog/posts/${slug}`} class="block">
-      <h2 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-brand transition-colors">
-        {title}
-      </h2>
+      <h2 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-brand transition-colors" set:html={highlightQuery ? highlightText(title, highlightQuery) : title}>
     </a>
     
     <!-- Meta information -->
@@ -73,9 +90,7 @@ const formatDate = (dateStr: string) => {
   </header>
   
   <!-- Description -->
-  <p class="text-gray-600 line-clamp-2 mb-4">
-    {description}
-  </p>
+  <p class="text-gray-600 line-clamp-2 mb-4" set:html={highlightQuery ? highlightText(description, highlightQuery) : description}>
   
   <!-- Tags -->
   {tags.length > 0 && (

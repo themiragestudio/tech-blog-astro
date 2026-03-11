@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import TagBadge from '../../components/TagBadge.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  
+  // 收集所有标签
+  const tagSet = new Set();
+  posts.forEach(post => {
+    if (post.data.tags) {
+      post.data.tags.forEach(tag => tagSet.add(tag));
+    }
+  });
+  
+  // 转换为路径数组
+  return Array.from(tagSet).map(tag => ({
+    params: { tag },
+    props: { tag }
+  }));
+}
+
+const { tag } = Astro.params;
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const filteredPosts = allPosts
+  .filter(post => post.data.tags && post.data.tags.includes(tag))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// 收集所有标签及其数量
+const allTags = new Map();
+allPosts.forEach(post => {
+  if (post.data.tags) {
+    post.data.tags.forEach(tag => {
+      allTags.set(tag, (allTags.get(tag) || 0) + 1);
+    });
+  }
+});
+
+// 按标签数量排序
+const sortedTags = Array.from(allTags.entries())
+  .sort((a, b) => b[1] - a[1])
+  .map(([tagName, count]) => ({ name: tagName, count }));
+---
+
+<BaseLayout title={`标签: ${tag} | Mirage Studio 技术博客`}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        标签: <span class="text-brand">{tag}</span>
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400">
+        共 {filteredPosts.length} 篇文章
+      </p>
+    </div>
+
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        所有标签
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        {sortedTags.map(({ name, count }) => (
+          <a href={`/tags/${name}`} class="no-underline">
+            <TagBadge 
+              tag={name} 
+              count={count} 
+              size="md"
+              variant={name === tag ? 'solid' : 'outline'}
+            />
+          </a>
+        ))}
+      </div>
+    </div>
+
+    {filteredPosts.length > 0 ? (
+      <div class="space-y-6">
+        {filteredPosts.map(post => (
+          <PostCard 
+            title={post.data.title}
+            description={post.data.description}
+            date={post.data.pubDate.toISOString()}
+            author={post.data.author}
+            tags={post.data.tags}
+            slug={post.slug}
+            readingTime={post.data.readingTime}
+          />
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-12">
+        <div class="text-gray-500 dark:text-gray-400 mb-4">
+          <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          暂无文章
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">
+          当前标签下还没有发布任何文章。
+        </p>
+        <a 
+          href="/posts" 
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand"
+        >
+          查看所有文章
+        </a>
+      </div>
+    )}
+  </div>
+</BaseLayout>

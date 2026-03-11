@@ -1,0 +1,124 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import Search from '../components/Search.astro';
+import { getCollection } from 'astro:content';
+
+const url = new URL(Astro.request.url);
+const searchQuery = url.searchParams.get('q') || '';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const sortedPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+let searchResults = [];
+if (searchQuery) {
+  const normalizedQuery = searchQuery.toLowerCase().trim();
+  searchResults = sortedPosts.filter(post => {
+    const title = post.data.title?.toLowerCase() || '';
+    const description = post.data.description?.toLowerCase() || '';
+    const tags = post.data.tags?.map(tag => tag.toLowerCase()) || [];
+    
+    return title.includes(normalizedQuery) ||
+           description.includes(normalizedQuery) ||
+           tags.some(tag => tag.includes(normalizedQuery));
+  });
+}
+---
+
+<BaseLayout title={`搜索: ${searchQuery || '所有文章'} | Mirage Studio 技术博客`}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        搜索文章
+      </h1>
+      
+      <div class="mb-6">
+        <Search 
+          placeholder="输入关键词搜索文章..." 
+          className="max-w-md"
+        />
+      </div>
+      
+      {searchQuery && (
+        <div class="mb-6">
+          <p class="text-gray-600 dark:text-gray-400">
+            搜索 "<span class="font-semibold text-brand">{searchQuery}</span>" 的结果:
+            <span class="ml-2 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
+              {searchResults.length} 篇文章
+            </span>
+          </p>
+        </div>
+      )}
+    </div>
+
+    {searchQuery ? (
+      searchResults.length > 0 ? (
+        <div class="space-y-6">
+          {searchResults.map(post => (
+            <PostCard 
+              title={post.data.title}
+              description={post.data.description}
+              date={post.data.pubDate.toISOString()}
+              author={post.data.author}
+              tags={post.data.tags}
+              slug={post.slug}
+              readingTime={post.data.readingTime}
+              highlightQuery={searchQuery}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-12">
+          <div class="text-gray-500 dark:text-gray-400 mb-4">
+            <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            没有找到相关文章
+          </h3>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">
+            尝试使用其他关键词搜索，或浏览所有文章。
+          </p>
+          <a 
+            href="/blog/posts" 
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand"
+          >
+            查看所有文章
+          </a>
+        </div>
+      )
+    ) : (
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+          所有文章
+        </h2>
+        <div class="space-y-6">
+          {sortedPosts.map(post => (
+            <PostCard 
+              title={post.data.title}
+              description={post.data.description}
+              date={post.data.pubDate.toISOString()}
+              author={post.data.author}
+              tags={post.data.tags}
+              slug={post.slug}
+              readingTime={post.data.readingTime}
+            />
+          ))}
+        </div>
+      </div>
+    )}
+
+    <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
+        搜索提示
+      </h3>
+      <ul class="text-gray-600 dark:text-gray-400 space-y-2">
+        <li>• 使用多个关键词可以获得更精确的结果</li>
+        <li>• 搜索支持标题、描述、标签和文章内容</li>
+        <li>• 点击搜索结果可以直接查看文章详情</li>
+        <li>• 使用标签页面可以按主题浏览文章</li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>
