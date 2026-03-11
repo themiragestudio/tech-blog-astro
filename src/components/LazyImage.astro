@@ -1,0 +1,153 @@
+---
+/**
+ * LazyImage.astro
+ * 图片懒加载组件
+ * - 原生 loading="lazy" 支持
+ * - Intersection Observer 回退
+ * - 渐进式加载效果
+ * - 响应式图片支持
+ */
+
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: string | ImageMetadata;
+  alt: string;
+  width?: number;
+  height?: number;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'sync' | 'auto';
+  format?: 'webp' | 'avif' | 'png' | 'jpeg';
+  quality?: number;
+  placeholder?: 'blur' | 'color' | 'none';
+  placeholderColor?: string;
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  class: className = '',
+  loading = 'lazy',
+  decoding = 'async',
+  format = 'webp',
+  quality = 80,
+  placeholder = 'blur',
+  placeholderColor = '#E5E7EB'
+} = Astro.props;
+
+// Check if src is a local image (ImageMetadata) or external URL
+const isLocalImage = typeof src !== 'string';
+---
+
+{isLocalImage ? (
+  <div class={`lazy-image-container relative overflow-hidden ${className}`}>
+    <!-- Placeholder -->
+    {placeholder === 'blur' && (
+      <div 
+        class="lazy-image-placeholder absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse transition-opacity duration-300"
+        aria-hidden="true"
+      ></div>
+    )}
+    {placeholder === 'color' && (
+      <div 
+        class="lazy-image-placeholder absolute inset-0 transition-opacity duration-300"
+        style={`background-color: ${placeholderColor}`}
+        aria-hidden="true"
+      ></div>
+    )}
+    
+    <!-- Optimized Image using Astro's Image component -->
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      format={format}
+      quality={quality}
+      loading={loading}
+      decoding={decoding}
+      class="lazy-image w-full h-auto transition-opacity duration-300"
+      onload="this.parentElement.classList.add('loaded')"
+    />
+  </div>
+) : (
+  <div class={`lazy-image-container relative overflow-hidden ${className}`}>
+    <!-- Placeholder -->
+    {placeholder !== 'none' && (
+      <div 
+        class="lazy-image-placeholder absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse transition-opacity duration-300"
+        style={placeholder === 'color' ? `background-color: ${placeholderColor}` : undefined}
+        aria-hidden="true"
+      ></div>
+    )}
+    
+    <!-- External Image with native lazy loading -->
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      loading={loading}
+      decoding={decoding}
+      class="lazy-image w-full h-auto transition-opacity duration-300"
+      onload="this.parentElement.classList.add('loaded')"
+    />
+  </div>
+)}
+
+<style>
+  .lazy-image-container {
+    background-color: #F3F4F6;
+  }
+  
+  :global(.dark) .lazy-image-container {
+    background-color: #374151;
+  }
+  
+  .lazy-image-container .lazy-image {
+    opacity: 0;
+  }
+  
+  .lazy-image-container.loaded .lazy-image {
+    opacity: 1;
+  }
+  
+  .lazy-image-container.loaded .lazy-image-placeholder {
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  // Fallback for browsers without native lazy loading
+  document.addEventListener('DOMContentLoaded', () => {
+    if ('loading' in HTMLImageElement.prototype) {
+      // Native lazy loading supported, images will lazy load automatically
+      return;
+    }
+    
+    // Intersection Observer fallback
+    const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+    
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target as HTMLImageElement;
+          const src = img.dataset.src;
+          if (src) {
+            img.src = src;
+            img.removeAttribute('data-src');
+          }
+          observer.unobserve(img);
+        }
+      });
+    }, {
+      rootMargin: '200px 0px'
+    });
+    
+    lazyImages.forEach(img => imageObserver.observe(img));
+  });
+</script>

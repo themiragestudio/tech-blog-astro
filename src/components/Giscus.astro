@@ -1,0 +1,189 @@
+---
+/**
+ * Giscus.astro
+ * Giscus 评论系统组件
+ * - 集成 GitHub Discussions
+ * - 支持暗色/亮色主题自动切换
+ * - 响应式设计
+ * - 懒加载支持
+ */
+
+interface Props {
+  repo?: string;
+  repoId?: string;
+  category?: string;
+  categoryId?: string;
+  mapping?: 'pathname' | 'url' | 'title' | 'og:title' | 'specific' | 'number';
+  term?: string;
+  strict?: '0' | '1';
+  reactionsEnabled?: '0' | '1';
+  emitMetadata?: '0' | '1';
+  inputPosition?: 'top' | 'bottom';
+  lang?: string;
+  loading?: 'lazy' | 'eager';
+}
+
+const {
+  // 使用 themiragestudio/tech-blog-astro 仓库
+  repo = 'themiragestudio/tech-blog-astro',
+  repoId = 'R_kgDORkitxg', // 从 GitHub GraphQL API 获取
+  category = 'Announcements',
+  categoryId = 'DIC_kwDORkitxs4C4MVd', // Announcements category ID
+  mapping = 'pathname',
+  term = '',
+  strict = '0',
+  reactionsEnabled = '1',
+  emitMetadata = '0',
+  inputPosition = 'top',
+  lang = 'zh-CN',
+  loading = 'lazy'
+} = Astro.props;
+---
+
+<div class="giscus-container mt-16 pt-8 border-t border-gray-200 dark:border-gray-800">
+  <!-- Section Header -->
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+      <svg class="w-6 h-6 text-brand dark:text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+      评论
+    </h2>
+    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+      通过 GitHub Discussions 参与讨论。需要 GitHub 账号登录。
+    </p>
+  </div>
+  
+  <!-- Giscus Widget Container -->
+  <div class="giscus" id="giscus-container"></div>
+  
+  <!-- Fallback Message -->
+  <noscript>
+    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 text-center">
+      <p class="text-gray-600 dark:text-gray-400">
+        评论系统需要 JavaScript 支持。请启用 JavaScript 或
+        <a 
+          href={`https://github.com/${repo}/discussions`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-brand dark:text-brand-light hover:underline"
+        >
+          在 GitHub Discussions 上查看评论
+        </a>
+      </p>
+    </div>
+  </noscript>
+</div>
+
+<script define:vars={{ repo, repoId, category, categoryId, mapping, term, strict, reactionsEnabled, emitMetadata, inputPosition, lang, loading }}>
+  // Giscus theme handling
+  function getGiscusTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    // 使用与博客设计一致的主题
+    return isDark ? 'dark_dimmed' : 'light';
+  }
+  
+  function loadGiscus() {
+    const container = document.getElementById('giscus-container');
+    if (!container) return;
+    
+    // Check if already loaded
+    if (container.querySelector('iframe')) return;
+    
+    // Create giscus script
+    const script = document.createElement('script');
+    script.src = 'https://giscus.app/client.js';
+    script.setAttribute('data-repo', repo);
+    script.setAttribute('data-repo-id', repoId);
+    script.setAttribute('data-category', category);
+    script.setAttribute('data-category-id', categoryId);
+    script.setAttribute('data-mapping', mapping);
+    if (term) script.setAttribute('data-term', term);
+    script.setAttribute('data-strict', strict);
+    script.setAttribute('data-reactions-enabled', reactionsEnabled);
+    script.setAttribute('data-emit-metadata', emitMetadata);
+    script.setAttribute('data-input-position', inputPosition);
+    script.setAttribute('data-theme', getGiscusTheme());
+    script.setAttribute('data-lang', lang);
+    script.setAttribute('data-loading', loading);
+    script.crossOrigin = 'anonymous';
+    script.async = true;
+    
+    container.appendChild(script);
+  }
+  
+  // Update Giscus theme when document theme changes
+  function updateGiscusTheme() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe) return;
+    
+    const theme = getGiscusTheme();
+    iframe.contentWindow?.postMessage(
+      { giscus: { setConfig: { theme } } },
+      'https://giscus.app'
+    );
+  }
+  
+  // Observe theme changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        updateGiscusTheme();
+      }
+    });
+  });
+  
+  // Start observing
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+  
+  // Load Giscus
+  if (loading === 'lazy') {
+    // Use Intersection Observer for lazy loading
+    const container = document.getElementById('giscus-container');
+    if (container) {
+      const intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              loadGiscus();
+              intersectionObserver.disconnect();
+            }
+          });
+        },
+        { rootMargin: '200px' }
+      );
+      intersectionObserver.observe(container);
+    }
+  } else {
+    // Load immediately
+    document.addEventListener('DOMContentLoaded', loadGiscus);
+  }
+</script>
+
+<style>
+  .giscus-container {
+    min-height: 200px;
+  }
+  
+  /* Ensure giscus iframe is responsive */
+  .giscus iframe {
+    width: 100% !important;
+  }
+  
+  /* Loading state */
+  .giscus:empty::before {
+    content: '加载评论中...';
+    display: block;
+    text-align: center;
+    padding: 2rem;
+    color: var(--tw-prose-body, #374151);
+    opacity: 0.6;
+  }
+  
+  :global(.dark) .giscus:empty::before {
+    color: #9CA3AF;
+  }
+</style>

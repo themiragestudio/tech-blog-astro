@@ -26,24 +26,25 @@ export async function GET(context) {
       }),
       author: post.data.author || 'Mirage Studio 团队',
       categories: post.data.tags || [],
-      customData: `
-        <language>zh-CN</language>
-        <copyright>Copyright ${new Date().getFullYear()} Mirage Studio</copyright>
-        <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-        <ttl>60</ttl>
-        <image>
-          <url>${context.site}blog/og-image.png</url>
-          <title>Mirage Studio 技术博客</title>
-          <link>${context.site}blog</link>
-        </image>
-      `,
     })),
     customData: `
+      <language>zh-CN</language>
+      <copyright>Copyright ${new Date().getFullYear()} Mirage Studio</copyright>
+      <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+      <ttl>60</ttl>
       <generator>Astro</generator>
-      <webMaster>contact@mirage.studio</webMaster>
-      <managingEditor>contact@mirage.studio</managingEditor>
+      <webMaster>contact@mirage.studio (Mirage Studio)</webMaster>
+      <managingEditor>contact@mirage.studio (Mirage Studio)</managingEditor>
       <docs>https://www.rssboard.org/rss-specification</docs>
+      <image>
+        <url>${context.site}blog/og-image.png</url>
+        <title>Mirage Studio 技术博客</title>
+        <link>${context.site}blog/</link>
+        <width>144</width>
+        <height>144</height>
+        <description>Mirage Studio 技术博客 Logo</description>
+      </image>
     `,
-    stylesheet: '/rss-styles.xsl',
+    stylesheet: '/blog/rss-styles.xsl',
   });
 }

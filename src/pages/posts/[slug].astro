@@ -33,7 +33,7 @@ const nextPost = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentInde
   updatedDate={post.data.updatedDate?.toISOString()}
   tags={post.data.tags || []}
   readingTime={post.data.readingTime || 5}
-  canonicalUrl={`https://blog.mirage.studio/posts/${post.slug}`}
+  canonicalUrl={`/blog/posts/${post.slug}`}
   ogImage={post.data.ogImage}
 >
   <Content />

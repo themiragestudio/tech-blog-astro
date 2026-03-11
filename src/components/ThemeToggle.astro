@@ -1,0 +1,231 @@
+---
+/**
+ * ThemeToggle.astro
+ * 暗色/亮色模式切换组件
+ * - 用户偏好保存 (localStorage)
+ * - 系统主题自动检测
+ * - 平滑过渡动画
+ * - 支持 SSR (避免闪烁)
+ */
+
+interface Props {
+  class?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const { class: className = '', size = 'md' } = Astro.props;
+
+const sizeClasses = {
+  sm: 'w-4 h-4',
+  md: 'w-5 h-5',
+  lg: 'w-6 h-6'
+};
+
+const iconSize = sizeClasses[size];
+---
+
+<button
+  type="button"
+  id="theme-toggle"
+  class={`theme-toggle relative inline-flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-brand dark:hover:text-brand-light transition-colors duration-200 ${className}`}
+  aria-label="切换主题"
+  title="切换亮色/暗色模式"
+>
+  <!-- Sun Icon (Light Mode) -->
+  <svg
+    class={`sun-icon ${iconSize} transition-all duration-300 absolute`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+    />
+  </svg>
+  
+  <!-- Moon Icon (Dark Mode) -->
+  <svg
+    class={`moon-icon ${iconSize} transition-all duration-300 absolute`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+    />
+  </svg>
+  
+  <!-- Spacer for proper button sizing -->
+  <span class={`${iconSize} opacity-0`} aria-hidden="true"></span>
+</button>
+
+<style>
+  /* Default state: show moon (assume light mode) */
+  .theme-toggle .sun-icon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+  
+  .theme-toggle .moon-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+  
+  /* Dark mode: show sun */
+  :global(.dark) .theme-toggle .sun-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+  
+  :global(.dark) .theme-toggle .moon-icon {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+  }
+  
+  /* Hover effect */
+  .theme-toggle:hover .sun-icon,
+  .theme-toggle:hover .moon-icon {
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  
+  /* Focus state for accessibility */
+  .theme-toggle:focus {
+    outline: none;
+  }
+  
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--color-brand, #7C3AED);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+</style>
+
+<script is:inline>
+  // Theme toggle functionality
+  // This script is inline to run before page render and avoid flash
+  (function() {
+    const THEME_KEY = 'mirage-blog-theme';
+    
+    // Get stored theme or system preference
+    function getStoredTheme() {
+      if (typeof localStorage !== 'undefined') {
+        return localStorage.getItem(THEME_KEY);
+      }
+      return null;
+    }
+    
+    // Get system preference
+    function getSystemTheme() {
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      return 'light';
+    }
+    
+    // Get effective theme
+    function getEffectiveTheme() {
+      const stored = getStoredTheme();
+      if (stored === 'dark' || stored === 'light') {
+        return stored;
+      }
+      return getSystemTheme();
+    }
+    
+    // Apply theme to document
+    function applyTheme(theme) {
+      const isDark = theme === 'dark';
+      document.documentElement.classList.toggle('dark', isDark);
+      
+      // Update meta theme-color for mobile browsers
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', isDark ? '#0F172A' : '#FFFFFF');
+      }
+    }
+    
+    // Save theme to localStorage
+    function saveTheme(theme) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(THEME_KEY, theme);
+      }
+    }
+    
+    // Toggle theme
+    function toggleTheme() {
+      const currentTheme = getEffectiveTheme();
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      saveTheme(newTheme);
+      applyTheme(newTheme);
+      return newTheme;
+    }
+    
+    // Initialize theme on page load
+    function initTheme() {
+      const theme = getEffectiveTheme();
+      applyTheme(theme);
+      
+      // Listen for system preference changes
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', function(e) {
+          // Only auto-switch if user hasn't explicitly set a preference
+          const stored = getStoredTheme();
+          if (!stored) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      }
+    }
+    
+    // Run on initial load
+    initTheme();
+    
+    // Setup toggle button click handlers after DOM is ready
+    if (typeof document !== 'undefined') {
+      document.addEventListener('DOMContentLoaded', function() {
+        // Handle all theme toggle buttons (desktop and mobile)
+        document.querySelectorAll('#theme-toggle, [data-theme-toggle]').forEach(function(button) {
+          button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newTheme = toggleTheme();
+            
+            // Announce to screen readers
+            const announcement = newTheme === 'dark' ? '已切换到暗色模式' : '已切换到亮色模式';
+            const liveRegion = document.getElementById('theme-announcement');
+            if (liveRegion) {
+              liveRegion.textContent = announcement;
+            }
+          });
+        });
+      });
+    }
+    
+    // Expose for external use
+    if (typeof window !== 'undefined') {
+      window.themeToggle = {
+        get: getEffectiveTheme,
+        set: function(theme) {
+          saveTheme(theme);
+          applyTheme(theme);
+        },
+        toggle: toggleTheme
+      };
+    }
+  })();
+</script>
+
+<!-- Screen reader announcement region -->
+<div 
+  id="theme-announcement" 
+  class="sr-only" 
+  role="status" 
+  aria-live="polite"
+></div>
