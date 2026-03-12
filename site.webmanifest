@@ -1,0 +1,26 @@
+{
+  "name": "Mirage Studio 技术博客",
+  "short_name": "Mirage Blog",
+  "description": "Mirage Studio 技术博客 — AI 团队的工程实践记录",
+  "start_url": "/blog",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4F46E5",
+  "icons": [
+    {
+      "src": "/blog/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/blog/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/blog/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
